@@ -1,0 +1,15 @@
+{
+  "name": "setplanner",
+  "version": "1.0.0",
+  "description": "Automation to help plan a DJ set.",
+  "license": "ISC",
+  "author": "Ryn Stewart",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "dependencies": {
+    "music-metadata": "^11.13.0"
+  }
+}
