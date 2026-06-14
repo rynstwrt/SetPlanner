@@ -10,6 +10,8 @@
     "start": "node ."
   },
   "dependencies": {
+    "glob": "^13.0.6",
+    "globby": "^16.2.0",
     "music-metadata": "^11.13.0"
   }
 }
