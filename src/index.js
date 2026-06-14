@@ -2,21 +2,15 @@ const {globby} = require("globby");
 const {Song} = require("./Song.js");
 
 
-function chooseRandom(list) {
-    return list[Math.floor(Math.random() * list.length)];
-}
-
+const chooseRandom = (list) => list[Math.floor(Math.random() * list.length)];
 
 
 function selectNextSong(prevSong) {
     console.log(`Finding unusedSongs compatible with key: ${prevSong.key}`)
 
-
     const exactMatches = unusedSongs.filter(song => prevSong.getExactMatchingKeys().includes(song.key));
     if (exactMatches.length)
-        // return exact Matches[Math.floor(Math.random() * exactMatches.length)];
         return chooseRandom(exactMatches);
-
 
 
     // Find energy boost matches
@@ -33,7 +27,6 @@ function selectNextSong(prevSong) {
         return chooseRandom(energyBoost3Matches);
 
 
-
     // Find energy Drop matches
     const energyDrop1Matches = unusedSongs.filter(song => prevSong.getEnergyDrop1Keys().includes(song.key));
     if (energyDrop1Matches.length)
@@ -46,7 +39,6 @@ function selectNextSong(prevSong) {
     const energyDrop3Matches = unusedSongs.filter(song => prevSong.getEnergyDrop3Keys().includes(song.key));
     if (energyDrop3Matches.length)
         return chooseRandom(energyDrop3Matches);
-
 
 
     // Randomly select if nothing else found
