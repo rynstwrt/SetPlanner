@@ -11,8 +11,9 @@ let unusedSongs = [];
 
 
 function selectNextSong(prevSong) {
-    console.log(`Finding unusedSongs compatible with key: ${prevSong.key}`)
+    // console.log(`Finding unusedSongs compatible with key: ${prevSong.key}`)
 
+    // Find exact matches
     const exactMatches = unusedSongs.filter(song => prevSong.getExactMatchingKeys().includes(song.key));
     if (exactMatches.length)
         return chooseRandom(exactMatches);
