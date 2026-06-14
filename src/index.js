@@ -77,22 +77,35 @@ let songs;
 // }
 
 
-const shiftCamelotNum = (camelotNum, shift) => (camelotNum + shift + 12) % 12 || 12;
+const shiftCamelotNum = (camelotNum, shift) => ((parseInt(camelotNum) + shift + 12) % 12) || 12;
+const flipCamelotLetter = (camelotLetter) => camelotLetter === "A" ? "B" : "A";
 
 
-function findUnusedCompatibleSongsInKey(key) {
+function changeCamelot(key, numShift=0, changeLetter=false) {
     const matches = key.match(/(\d{1,2})([A|B])/);
     const [_, camelotNum, camelotLetter] = matches;
 
-    console.log(camelotNum, camelotLetter)
+    const shiftedNum = shiftCamelotNum(camelotNum, numShift);
+    const flippedOrUnflippedLetter = changeLetter ? flipCamelotLetter(camelotLetter) : camelotLetter;
+    return `${shiftedNum}${flippedOrUnflippedLetter}`;
+}
+
+
+function findUnusedCompatibleSongsInKey(key) {
+    // const matches = key.match(/(\d{1,2})([A|B])/);
+    // const [_, camelotNum, camelotLetter] = matches;
+
+    // console.log(camelotNum, )
+
+    // console.log(camelotNum, camelotLetter)
 
     // Find exact song key matches
     return songs.filter(song => {
         if (song.key === key)
             return true;
 
-        let targetCamelotLetter = (camelotLetter === "A") ? "B" : "A";
-        let targetCamelotNum = (targetCamelotLetter === "A") ? camelotNum-1 : camelotNum+1;
+        // let targetCamelotLetter = (camelotLetter === "A") ? "B" : "A";
+        // let targetCamelotNum = (targetCamelotLetter === "A") ? camelotNum-1 : camelotNum+1;
 
     });
 
@@ -113,12 +126,6 @@ function findUnusedCompatibleSongsInKey(key) {
 
 
 (async () => {
-    // console.log(13 % 12);
-    // console.log((1 - 1 + 12) % 12);
-    console.log(shiftCamelotNum(1, 1));
-    console.log(shiftCamelotNum(12, 1));
-    console.log(shiftCamelotNum(1, -1));
-    return;
     songs = await getFilesWithKey();
 
     const startSongIdx = Math.floor(Math.random() * songs.length);
