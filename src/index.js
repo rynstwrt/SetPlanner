@@ -7,7 +7,7 @@ const MUSIC_DIR = "test/music";
 // const START_FILE = path.join(MUSIC_DIR, "Amy Kisnorbo - Squeeeze");
 
 
-let usedSongs = [];
+let setList = [];
 
 
 function getFilesWithKey() {
@@ -34,6 +34,12 @@ function getFilesWithKey() {
 
     });
 }
+
+
+function chooseRandom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+}
+
 
 
 /*  
@@ -67,7 +73,7 @@ function getFilesWithKey() {
  *   - 2A->12A (-2)
  *   - 2A->7A (+5)
  */
-let songs;
+let unusedSongs;
 
 
 // function shiftCamelotNum(camelotNum, shift) {
@@ -91,53 +97,94 @@ function changeCamelot(key, numShift=0, changeLetter=false) {
 }
 
 
-function findUnusedCompatibleSongsInKey(key) {
-    // const matches = key.match(/(\d{1,2})([A|B])/);
-    // const [_, camelotNum, camelotLetter] = matches;
+function selectNextSong(key) {
+    const matches = key.match(/(\d{1,2})([A|B])/);
+    const [_, camelotNum, camelotLetter] = matches;
 
-    // console.log(camelotNum, )
-
-    // console.log(camelotNum, camelotLetter)
+    console.log(`Finding unusedSongs compatible with key: ${key}`)
 
     // Find exact song key matches
-    return songs.filter(song => {
+    const exactMatches = unusedSongs.filter(song => {
         if (song.key === key)
             return true;
 
+        if (camelotLetter === "A" && song.key === changeCamelot(key, -1, true))
+            return true;
+
+        if (camelotLetter === "B" && song.key === changeCamelot(key, 1, true))
+            return true;
         // let targetCamelotLetter = (camelotLetter === "A") ? "B" : "A";
         // let targetCamelotNum = (targetCamelotLetter === "A") ? camelotNum-1 : camelotNum+1;
 
+        return false;
     });
 
+    console.log(`exact matches:`);
+    exactMatches.forEach(exactMatch => console.log(exactMatch));
+
+    if (exactMatches.length)
+        // return exact Matches[Math.floor(Math.random() * exactMatches.length)];
+        return chooseRandom(exactMatches);
+
     // TODO: Find energy boost matches
-
-    // TODO: Find energy drop matches
-
-    // TODO: Randomly select if nothing else found
+    const energyBoostMatches = [];
+    if (energyBoostMatches.length) 
+        return chooseRandom(energyBoostMatches);
     
-    // for (const match of matches) {
-    //     console.log(match)
-    // }
-    // songs.forEach(song => {
+    const energyBoost2Matches = [];
+    if (energyBoost2Matches.length) 
+        return chooseRandom(energyBoost2Matches);
+    
+    const energyBoost3Matches = [];
+    if (energyBoost3Matches.length) 
+        return chooseRandom(energyBoost3Matches);
 
-    // });
+
+    // TODO: Find energy Drop matches
+    const energyDropMatches = [];
+    if (energyDropMatches.length)
+        return chooseRandom(energyDropMatches);
+
+    const energyDrop2Matches = [];
+    if (energyDrop2Matches.length)
+        return chooseRandom(energyDrop2Matches);
+
+    const energyDrop3Matches = [];
+    if (energyDrop3Matches.length)
+        return chooseRandom(energyDrop3Matches);
+
+
+    // Randomly select if nothing else found
+    return chooseRandom(unusedSongs);
+}
+
+
+function addSongToSet(song) {
+    setList.push(song);
+    unusedSongs.splice(unusedSongs.indexOf(song), 1);
 }
 
 
 
 (async () => {
-    songs = await getFilesWithKey();
+    unusedSongs = await getFilesWithKey();
 
-    const startSongIdx = Math.floor(Math.random() * songs.length);
-    const startSong = songs[startSongIdx];
-    songs.splice(startSongIdx, 1);
-
-    usedSongs.push(startSong);
+    // const startSongIdx = Math.floor(Math.random() * unusedSongs.length);
+    // const startSong = unusedSongs[startSongIdx];
+    // unusedSongs.splice(startSongIdx, 1);
+    // setList.push(startSong);
+    const startSong = chooseRandom(unusedSongs);
+    addSongToSet(startSong);
 
     for (let i = 0; i < 10; ++i) {
-        const lastUsedSong = usedSongs[usedSongs.length - 1];
-        const nextSong = findUnusedCompatibleSongsInKey(lastUsedSong.key);
-        // songs.splice(startSongIdx, 1);
-        // usedSongs.push(nextSong);
+        const lastUsedSong = setList[setList.length - 1];
+        const nextSong = selectNextSong(lastUsedSong.key);
+
+        addSongToSet(nextSong);
+        // const nextSongIdx = unusedSongs.indexOf(nextSong);
+        // unusedSongs.splice(nextSongIdx, 1);
+        // setList.push(nextSong);
     }
+
+    // console.log(setList) 
 })();
