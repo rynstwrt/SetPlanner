@@ -7,11 +7,14 @@
   "type": "commonjs",
   "main": "src/index.js",
   "scripts": {
-    "start": "node ."
+    "start": "electron ."
   },
   "dependencies": {
     "glob": "^13.0.6",
     "globby": "^16.2.0",
     "music-metadata": "^11.13.0"
+  },
+  "devDependencies": {
+    "electron": "^42.4.0"
   }
 }
