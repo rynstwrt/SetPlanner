@@ -1,8 +1,13 @@
 const {globby} = require("globby");
 const {Song} = require("./Song.js");
+const path = require("path");
 
 
 const chooseRandom = (list) => list[Math.floor(Math.random() * list.length)];
+
+
+let setList = [];
+let unusedSongs = [];
 
 
 function selectNextSong(prevSong) {
@@ -47,7 +52,6 @@ function selectNextSong(prevSong) {
 
 
 
-let setList = [];
 function addSongToSet(song) {
     setList.push(song);
     unusedSongs.splice(unusedSongs.indexOf(song), 1);
@@ -55,7 +59,6 @@ function addSongToSet(song) {
 
 
 
-const unusedSongs = [];
 (async () => {
     const songPaths = await globby("./test/music/**/*");
 
@@ -65,14 +68,17 @@ const unusedSongs = [];
             unusedSongs.push(song);
     }
 
+
     const startSong = chooseRandom(unusedSongs);
     addSongToSet(startSong);
 
-    for (let i = 0; i < 10; ++i) {
-        const nextSong = selectNextSong(setList[setList.length-1]);
+    for (let i = unusedSongs.length-1; i >= 0; --i) {
+        const nextSong = selectNextSong(setList[setList.length - 1]);
         addSongToSet(nextSong);
     }
 
     console.log("FINISHED SETLIST:");
-    console.log(setList);
+    for (const [i, song] of setList.entries()) {
+        console.log(`[${i}] ${path.basename(song.path)} (${song.key})`);
+    }
 })();
