@@ -118,3 +118,15 @@ Network Trash Folder
 Temporary Items
 .apdisk
 test/
+pnpm-debug.log*
+node_modules
+dist-ssr
+*.local
+../.vscode/*
+!../.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
