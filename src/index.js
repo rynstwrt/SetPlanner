@@ -1,4 +1,4 @@
-const {globby} = require("globby");
+const {globby, convertPathToPattern} = require("globby");
 const {Song} = require("./Song.js");
 const path = require("path");
 
@@ -52,16 +52,18 @@ function selectNextSong(prevSong) {
 }
 
 
-
 function addSongToSet(song) {
     setList.push(song);
     unusedSongs.splice(unusedSongs.indexOf(song), 1);
 }
 
 
+async function main(musicDir) {
+    const base = convertPathToPattern(musicDir)
+    const songPaths = await globby(`${base}/**/*`);
+    if (!songPaths.length)
+        return console.error("No music files found!");
 
-(async () => {
-    const songPaths = await globby("./test/music/**/*");
 
     for (const songPath of songPaths) {
         const song = new Song(songPath);
@@ -73,7 +75,7 @@ function addSongToSet(song) {
     const startSong = chooseRandom(unusedSongs);
     addSongToSet(startSong);
 
-    for (let i = unusedSongs.length-1; i >= 0; --i) {
+    for (let i = unusedSongs.length - 1; i >= 0; --i) {
         const nextSong = selectNextSong(setList[setList.length - 1]);
         addSongToSet(nextSong);
     }
@@ -82,4 +84,9 @@ function addSongToSet(song) {
     for (const [i, song] of setList.entries()) {
         console.log(`[${i}] ${path.basename(song.path)} (${song.key})`);
     }
+}
+
+
+(async () => {
+    await main("./test/music");
 })();
