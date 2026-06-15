@@ -36,8 +36,13 @@ function getCompatibleKeys(track) {
     const compatibleKeys = new Set();
 
     // Exact matches
-    compatibleKeys.add(track.key);
-    compatibleKeys.add(changeCamelot((camelotLetter === "A" ? -1 : 1), true));
+    if (Math.random() > 0.5) {
+        compatibleKeys.add(changeCamelot((camelotLetter === "A" ? -1 : 1), true));
+        compatibleKeys.add(track.key);
+    } else {
+        compatibleKeys.add(track.key);
+        compatibleKeys.add(changeCamelot((camelotLetter === "A" ? -1 : 1), true));
+    }
 
     // Energy+ keys
     compatibleKeys.add(changeCamelot(1));
