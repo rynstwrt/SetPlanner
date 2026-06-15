@@ -7,7 +7,7 @@
     "type": "commonjs",
     "main": "src/index.js",
     "scripts": {
-        "start": "node .."
+        "start": "node ."
     },
     "dependencies": {
         "commander": "^15.0.0",
