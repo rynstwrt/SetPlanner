@@ -1,21 +1,17 @@
 {
-    "name": "setplanner",
-    "version": "1.0.0",
-    "description": "Automation to help plan a DJ set.",
-    "license": "ISC",
-    "author": "Ryn Stewart",
-    "type": "commonjs",
-    "main": "src/index.js",
-    "scripts": {
-        "start": "node ."
-    },
-    "dependencies": {
-        "commander": "^15.0.0",
-        "glob": "^13.0.6",
-        "globby": "^16.2.0",
-        "music-metadata": "^11.13.0"
-    },
-    "bin": {
-        "setplanner": "src/index.js"
-    }
+  "name": "setplanner",
+  "version": "1.0.0",
+  "description": "Automation to help plan a DJ set.",
+  "license": "ISC",
+  "author": "Ryn Stewart",
+  "type": "commonjs",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node ."
+  },
+  "dependencies": {
+    "glob": "^13.0.6",
+    "globby": "^16.2.0",
+    "music-metadata": "^11.13.0"
+  }
 }
