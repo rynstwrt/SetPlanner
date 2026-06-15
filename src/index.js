@@ -3,6 +3,9 @@ const figlet = require("figlet");
 const {RekordboxConnect} = require("rekordbox-connect");
 const {table} = require("console-table-without-index");
 const chalk = require("chalk");
+const {getCompatibleKeys} = require("./util/song-util");
+const {chooseRandom} = require("./util/misc-util");
+
 
 
 const rb = new RekordboxConnect({
@@ -12,67 +15,37 @@ const rb = new RekordboxConnect({
 });
 
 
-let setList = [];
 
+function generateSetList(tracks, setListLength) {
+    let setList = [];
 
-const chooseRandom = (list) => list[Math.floor(Math.random() * list.length)];
+    const startTrack = chooseRandom(tracks);
+    setList.push(startTrack);
+    tracks.splice(tracks.indexOf(startTrack), 1);
 
+    for (let i = setListLength - 1; i >= 0; --i) {
+        const lastTrackCompatibleKeyArrs = getCompatibleKeys(setList[setList.length - 1]);
 
-function parseCamelotKey(camelotKey) {
-    const matches = camelotKey.match(/(\d{1,2})([A|B])/);
-    const camelotNum = parseInt(matches[1]);
-    const camelotLetter = matches[2];
-    return [camelotNum, camelotLetter];
-}
+        let nextTrack = chooseRandom(tracks);
+        for (const compatKeyTypeArr of lastTrackCompatibleKeyArrs) {
+            const tracksInCurrentCompatKeyType = tracks.filter(track => compatKeyTypeArr.includes(track.key));
+            if (tracksInCurrentCompatKeyType.length) {
+                nextTrack = chooseRandom(tracksInCurrentCompatKeyType);
+                break;
+            }
+        }
 
-
-function getCompatibleKeys(track) {
-    const [camelotNum, camelotLetter] = parseCamelotKey(track.key);
-
-    function changeCamelot(numShift = 0, changeLetter = false) {
-        const shiftedNum = ((camelotNum) + numShift + 12) % 12 || 12;
-        const flippedOrUnflippedLetter = changeLetter ? (camelotLetter === "A" ? "B" : "A") : camelotLetter;
-        return `${shiftedNum}${flippedOrUnflippedLetter}`;
+        setList.push(nextTrack);
+        tracks.splice(tracks.indexOf(nextTrack), 1);
     }
 
-    const compatibleKeys = new Set();
-
-    // Exact matches
-    compatibleKeys.add([track.key, changeCamelot((camelotLetter === "A" ? -1 : 1), true)])
-
-    // Energy+ keys
-    compatibleKeys.add([
-        changeCamelot(1),
-        ...(camelotLetter === "A") ? [changeCamelot(0, true)] : []]);
-
-    // Energy++ keys
-    compatibleKeys.add([changeCamelot(-3)]);
-
-    // Energy+++ keys
-    compatibleKeys.add([changeCamelot(2), changeCamelot(-5)]);
-
-    // Energy- keys
-    compatibleKeys.add([
-        changeCamelot(-1),
-        ...(camelotLetter === "B") ? [changeCamelot(0, true)] : []]);
-
-    // Energy-- keys
-    compatibleKeys.add([changeCamelot(3)]);
-
-    // Energy--- keys
-    compatibleKeys.add([changeCamelot(-2), changeCamelot(5)]);
-
-    // Mood change keys
-    compatibleKeys.add([changeCamelot((camelotLetter === "A" ? 3 : -3), true)]);
-
-    return compatibleKeys;
+    return setList;
 }
+
 
 
 rb.on("ready", async _ => {
     console.log(chalk.green(await figlet.text("SetPlanner")));
-    return rb.stop();
-
 
     const playlists = rb.loadPlaylists();
     if (!playlists.length)
@@ -88,31 +61,13 @@ rb.on("ready", async _ => {
     const tracks = [...new Set(selectedPlaylistIDs.flatMap(id => rb.loadPlaylistTracks(id)))];
 
 
-    const numTracks = parseInt(await text({
-        message: "Enter the number of tracks desired, if any."
+    const setListLength = parseInt(await text({
+        message: "Enter the number of tracks desired, if any.",
+
     }) || tracks.length) - 1;
 
 
-    const startTrack = chooseRandom(tracks);
-    setList.push(startTrack);
-    tracks.splice(tracks.indexOf(startTrack), 1);
-
-
-    for (let i = numTracks - 1; i >= 0; --i) {
-        const lastTrackCompatibleKeyArrs = getCompatibleKeys(setList[setList.length - 1]);
-
-        let nextTrack = chooseRandom(tracks);
-        for (const compatKeyTypeArr of lastTrackCompatibleKeyArrs) {
-            const tracksInCurrentCompatKeyType = tracks.filter(track => compatKeyTypeArr.includes(track.key));
-            if (tracksInCurrentCompatKeyType.length) {
-                nextTrack = chooseRandom(tracksInCurrentCompatKeyType);
-                break;
-            }
-        }
-
-        setList.push(nextTrack);
-        tracks.splice(tracks.indexOf(nextTrack), 1);
-    }
+    const setList = generateSetList(tracks, setListLength);
 
 
     console.log("FINISHED SETLIST:");
