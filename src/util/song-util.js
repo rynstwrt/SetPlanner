@@ -5,7 +5,7 @@ function parseCamelotKey(camelotKey) {
 }
 
 
-function getCompatibleKeys(track) {
+export function getCompatibleKeys(track) {
     const [camelotNum, camelotLetter] = parseCamelotKey(track.key);
 
     function changeCamelot(numShift = 0, changeLetter = false) {
@@ -46,6 +46,3 @@ function getCompatibleKeys(track) {
 
     return compatibleKeys;
 }
-
-
-module.exports = {getCompatibleKeys};

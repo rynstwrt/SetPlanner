@@ -1,4 +1,1 @@
-const chooseRandom = (list) => list[Math.floor(Math.random() * list.length)];
-
-
-module.exports = {chooseRandom};
+export const chooseRandom = (list) => list[Math.floor(Math.random() * list.length)];

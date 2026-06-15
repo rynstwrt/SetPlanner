@@ -1,10 +1,10 @@
-const {intro, outro, isCancel, cancel, text, multiselect} = require("@clack/prompts");
-const figlet = require("figlet");
-const {RekordboxConnect} = require("rekordbox-connect");
-const {table} = require("console-table-without-index");
-const chalk = require("chalk");
-const {getCompatibleKeys} = require("./util/song-util");
-const {chooseRandom} = require("./util/misc-util");
+import {intro, outro, isCancel, text, multiselect} from "@clack/prompts";
+import figlet from "figlet";
+import {RekordboxConnect} from "rekordbox-connect";
+import {table} from "console-table-without-index";
+import chalk from "chalk";
+import {getCompatibleKeys} from "./util/song-util.js";
+import {chooseRandom} from "./util/misc-util.js";
 
 
 
