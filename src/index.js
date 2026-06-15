@@ -1,6 +1,16 @@
 const {globby, convertPathToPattern} = require("globby");
 const {Song} = require("./Song.js");
 const path = require("path");
+const {intro, outro, isCancel, cancel, text, multiselect} = require("@clack/prompts");
+const figlet = require("figlet");
+const {RekordboxConnect} = require("rekordbox-connect");
+
+
+const rb = new RekordboxConnect({
+    pollIntervalMs: 2000,
+    maxRows: 5000,
+    historyMaxRows: 100
+});
 
 
 const chooseRandom = (list) => list[Math.floor(Math.random() * list.length)];
@@ -58,19 +68,41 @@ function addSongToSet(song) {
 }
 
 
-async function main(musicDir) {
-    const base = convertPathToPattern(musicDir)
-    const songPaths = await globby(`${base}/**/*`);
-    if (!songPaths.length)
-        return console.error("No music files found!");
+// async function main(musicDir) {
+//     const base = convertPathToPattern(musicDir)
+//     const songPaths = await globby(`${base}/**/*`);
+//     if (!songPaths.length)
+//         return console.error("No music files found!");
+//
+//
+//     for (const songPath of songPaths) {
+//         const song = new Song(songPath);
+//         if (await song.loadKey())
+//             unusedSongs.push(song);
+//     }
+//
+//
+//     const startSong = chooseRandom(unusedSongs);
+//     addSongToSet(startSong);
+//
+//     for (let i = unusedSongs.length - 1; i >= 0; --i) {
+//         const nextSong = selectNextSong(setList[setList.length - 1]);
+//         addSongToSet(nextSong);
+//     }
+//
+//     console.log("FINISHED SETLIST:");
+//     for (const [i, song] of setList.entries()) {
+//         console.log(`[${i}] ${path.basename(song.path)} (${song.key})`);
+//     }
+// }
 
 
-    for (const songPath of songPaths) {
-        const song = new Song(songPath);
-        if (await song.loadKey())
-            unusedSongs.push(song);
-    }
-
+function createSetList(tracks) {
+    for (const track of tracks) {
+        const song = new Song(track);
+        song.loadKey();
+        unusedSongs.push(song);
+    } 
 
     const startSong = chooseRandom(unusedSongs);
     addSongToSet(startSong);
@@ -87,6 +119,35 @@ async function main(musicDir) {
 }
 
 
+rb.on("ready", async info => {
+    console.log(await figlet.text("SetPlanner"));
+
+    const playlists = rb.loadPlaylists();
+    if (!playlists.length)
+        return console.error("Error: No Rekordbox playlists were found!");
+
+    const selectedPlaylistIDs = await multiselect({
+        message: "Select playlists to create a set with.",
+        options: playlists.map(playlist => ({value: playlist.ID, label: playlist.Name}))
+    }) || [];
+
+    const tracks = selectedPlaylistIDs.flatMap(id => rb.loadPlaylistTracks(id));
+
+    createSetList(tracks);
+
+    rb.stop();
+});
+
+
+rb.start();
+
+
 (async () => {
-    await main("./test/music");
+    // await main("./test/music");
+
+
+    // intro(`create-my-app`);
+    // outro(`You're all set!`);
 })();
+
+

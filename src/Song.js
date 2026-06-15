@@ -35,28 +35,28 @@ const {parseStream} = require("music-metadata");
  *   - 2A->7A (+5)
  */
 class Song {
-    constructor(filePath) {
-        this.path = filePath;
-        this.key = undefined;
+    constructor(track) {
+        this.path = track.filePath;
+        this.key = track.key;
         this.camelotNum = undefined;
         this.camelotLetter = undefined;
     }
 
 
-    async loadKey() {
-        const audioStream = fs.createReadStream(this.path);
-        const metadata = await parseStream(audioStream, {mimeType: "audio/mpeg"});
+    loadKey() {
+        // const audioStream = fs.createReadStream(this.path);
+        // const metadata = await parseStream(audioStream, {mimeType: "audio/mpeg"});
 
-        this.key = metadata.common.key;
-        if (!this.key) {
-            console.warn(`File ${this.path} does not have a key!`);
-            return false;
-        }
+        // this.key = metadata.common.key;
+        // if (!this.key) {
+        //     console.warn(`File ${this.path} does not have a key!`);
+        //     return false;
+        // }
 
         const matches = this.key.match(/(\d{1,2})([A|B])/);
         this.camelotNum = matches[1];
         this.camelotLetter = matches[2];
-        return true;
+        // return true;
     }
 
 

@@ -10,8 +10,11 @@
     "start": "node ."
   },
   "dependencies": {
+    "@clack/prompts": "^1.5.1",
+    "figlet": "^1.11.0",
     "glob": "^13.0.6",
     "globby": "^16.2.0",
-    "music-metadata": "^11.13.0"
+    "music-metadata": "^11.13.0",
+    "rekordbox-connect": "^1.2.9"
   }
 }
