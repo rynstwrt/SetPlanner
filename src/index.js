@@ -1,6 +1,7 @@
 const {intro, outro, isCancel, cancel, text, multiselect} = require("@clack/prompts");
 const figlet = require("figlet");
 const {RekordboxConnect} = require("rekordbox-connect");
+const {table} = require("console-table-without-index");
 
 
 const rb = new RekordboxConnect({
@@ -36,76 +37,73 @@ function getCompatibleKeys(track) {
     const compatibleKeys = new Set();
 
     // Exact matches
-    if (Math.random() > 0.5) {
-        compatibleKeys.add(changeCamelot((camelotLetter === "A" ? -1 : 1), true));
-        compatibleKeys.add(track.key);
-    } else {
-        compatibleKeys.add(track.key);
-        compatibleKeys.add(changeCamelot((camelotLetter === "A" ? -1 : 1), true));
-    }
+    compatibleKeys.add([track.key, changeCamelot((camelotLetter === "A" ? -1 : 1), true)])
 
     // Energy+ keys
-    compatibleKeys.add(changeCamelot(1));
-    if (camelotLetter === "A")
-        compatibleKeys.add(changeCamelot(0, true));
+    compatibleKeys.add([
+        changeCamelot(1),
+        ...(camelotLetter === "A") ? [changeCamelot(0, true)] : []]);
 
     // Energy++ keys
-    compatibleKeys.add(changeCamelot(-3));
+    compatibleKeys.add([changeCamelot(-3)]);
 
     // Energy+++ keys
-    compatibleKeys.add(changeCamelot(2));
-    compatibleKeys.add(changeCamelot(-5));
+    compatibleKeys.add([changeCamelot(2), changeCamelot(-5)]);
 
     // Energy- keys
-    compatibleKeys.add(changeCamelot(-1));
-    if (camelotLetter === "B")
-        compatibleKeys.add(changeCamelot(0, true));
+    compatibleKeys.add([
+        changeCamelot(-1),
+        ...(camelotLetter === "B") ? [changeCamelot(0, true)] : []]);
 
     // Energy-- keys
-    compatibleKeys.add(changeCamelot(3));
+    compatibleKeys.add([changeCamelot(3)]);
 
     // Energy--- keys
-    compatibleKeys.add(changeCamelot(-2));
-    compatibleKeys.add(changeCamelot(5));
+    compatibleKeys.add([changeCamelot(-2), changeCamelot(5)]);
 
     // Mood change keys
-    compatibleKeys.add(changeCamelot((camelotLetter === "A" ? 3 : -3), true));
+    compatibleKeys.add([changeCamelot((camelotLetter === "A" ? 3 : -3), true)]);
 
     return compatibleKeys;
 }
 
 
-rb.on("ready", async info => {
+rb.on("ready", async _ => {
     console.log(await figlet.text("SetPlanner"));
+
 
     const playlists = rb.loadPlaylists();
     if (!playlists.length)
         return console.error("Error: No Rekordbox playlists were found!");
+
 
     const selectedPlaylistIDs = await multiselect({
         message: "Select playlists to create a set with.",
         options: playlists.map(playlist => ({value: playlist.ID, label: playlist.Name}))
     }) || [];
 
+
     const tracks = [...new Set(selectedPlaylistIDs.flatMap(id => rb.loadPlaylistTracks(id)))];
+
 
     const numTracks = parseInt(await text({
         message: "Enter the number of tracks desired, if any."
     }) || tracks.length) - 1;
 
+
     const startTrack = chooseRandom(tracks);
     setList.push(startTrack);
     tracks.splice(tracks.indexOf(startTrack), 1);
 
-    // for (let i = tracks.length - 1; i >= 0; --i) {
+
     for (let i = numTracks - 1; i >= 0; --i) {
-        const lastTrackCompatibleKeys = getCompatibleKeys(setList[setList.length - 1]);
+        const lastTrackCompatibleKeyArrs = getCompatibleKeys(setList[setList.length - 1]);
 
         let nextTrack = chooseRandom(tracks);
-        for (const compatKey of lastTrackCompatibleKeys) {
-            const tracksInCurrentCompatKey = tracks.filter(track => track.key === compatKey);
-            if (tracksInCurrentCompatKey.length) {
-                nextTrack = chooseRandom(tracksInCurrentCompatKey);
+        for (const compatKeyTypeArr of lastTrackCompatibleKeyArrs) {
+            const tracksInCurrentCompatKeyType = tracks.filter(track => compatKeyTypeArr.includes(track.key));
+            if (tracksInCurrentCompatKeyType.length) {
+                nextTrack = chooseRandom(tracksInCurrentCompatKeyType);
                 break;
             }
         }
@@ -114,10 +112,17 @@ rb.on("ready", async info => {
         tracks.splice(tracks.indexOf(nextTrack), 1);
     }
 
+
     console.log("FINISHED SETLIST:");
-    for (const [i, track] of setList.entries()) {
-        console.log(`[${i + 1}] ${track.title} (${track.key})`);
-    }
+    console.log(table(
+        setList.map((track, i) => ({
+            '#': i,
+            title: track.title,
+            key: track.key,
+            // path: track.filePath
+        }))
+    ));
+
 
     rb.stop();
 });
