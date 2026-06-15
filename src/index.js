@@ -2,6 +2,7 @@ const {intro, outro, isCancel, cancel, text, multiselect} = require("@clack/prom
 const figlet = require("figlet");
 const {RekordboxConnect} = require("rekordbox-connect");
 const {table} = require("console-table-without-index");
+const chalk = require("chalk");
 
 
 const rb = new RekordboxConnect({
@@ -69,7 +70,8 @@ function getCompatibleKeys(track) {
 
 
 rb.on("ready", async _ => {
-    console.log(await figlet.text("SetPlanner"));
+    console.log(chalk.green(await figlet.text("SetPlanner")));
+    return rb.stop();
 
 
     const playlists = rb.loadPlaylists();

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.5.1",
+    "chalk": "^4.1.2",
     "console-table-without-index": "^0.1.1",
     "figlet": "^1.11.0",
     "glob": "^13.0.6",
