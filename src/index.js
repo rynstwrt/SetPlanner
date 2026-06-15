@@ -1,4 +1,4 @@
-import {intro, outro, isCancel, text, multiselect} from "@clack/prompts";
+import {intro, outro, isCancel, text, select, multiselect} from "@clack/prompts";
 import figlet from "figlet";
 import {RekordboxConnect} from "rekordbox-connect";
 import {table} from "console-table-without-index";
@@ -7,13 +7,11 @@ import {getCompatibleKeys} from "./util/song-util.js";
 import {chooseRandom} from "./util/misc-util.js";
 
 
-
 const rb = new RekordboxConnect({
     pollIntervalMs: 2000,
     maxRows: 5000,
     historyMaxRows: 100
 });
-
 
 
 function generateSetList(tracks, setListLength) {
@@ -44,25 +42,27 @@ function generateSetList(tracks, setListLength) {
 
 
 
-rb.on("ready", async _ => {
-    console.log(chalk.green(await figlet.text("SetPlanner")));
-
+async function runGenerateSetListDialog() {
     const playlists = rb.loadPlaylists();
     if (!playlists.length)
-        return console.error("Error: No Rekordbox playlists were found!");
+        throw Error("No Rekordbox playlists were found.");
 
 
     const selectedPlaylistIDs = await multiselect({
         message: "Select playlists to create a set with.",
         options: playlists.map(playlist => ({value: playlist.ID, label: playlist.Name}))
     }) || [];
+    if (isCancel(selectedPlaylistIDs)) {
+        throw Error("No playlist selected.")
+    }
 
 
     const tracks = [...new Set(selectedPlaylistIDs.flatMap(id => rb.loadPlaylistTracks(id)))];
-
+    if (!tracks.length)
+        throw Error(`No tracks found in the selected playlists.`);
 
     const setListLength = parseInt(await text({
-        message: "Enter the number of tracks desired, if any.",
+        message: "Enter the desired number of tracks in the set, or press enter to use all.",
 
     }) || tracks.length) - 1;
 
@@ -71,17 +71,40 @@ rb.on("ready", async _ => {
 
 
     console.log("FINISHED SETLIST:");
-    console.log(table(
+    console.log(chalk.gray.bold(table(
         setList.map((track, i) => ({
             '#': i,
             title: track.title,
             key: track.key,
             // path: track.filePath
-        }))
+        })))
     ));
+}
 
 
-    rb.stop();
+
+rb.on("ready", async _ => {
+    console.log(chalk.cyanBright.bold(await figlet.text("SetPlanner", {font: "Standard"})));
+    intro(chalk.gray("Starting SetPlanner."));
+
+    try {
+        const option = await select({
+            message: chalk.cyan.bold("Select what to do."),
+            options: [
+                {value: "setlistgen", label: "Generate a set list from a Rekordbox playlist"}
+            ]
+        });
+
+        if (option === "setlistgen") {
+            await runGenerateSetListDialog();
+        }
+    } catch (err) {
+        console.error(chalk.bold.redBright("Error:", err));
+    } finally {
+        rb.stop();
+        outro(chalk.gray("Exiting SetPlanner."));
+    }
+
 });
 
 
